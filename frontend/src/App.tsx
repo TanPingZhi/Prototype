@@ -47,9 +47,7 @@ export default function App() {
   useEffect(() => {
     const loadWorkflows = async () => {
       try {
-        const response = await fetch("/api/workflows", {
-          headers: { Accept: "application/json" },
-        });
+        const response = await fetch("/api/workflows", { headers: { Accept: "application/json" } });
         if (!response.ok) {
           throw new Error(`${response.status}`);
         }
@@ -68,11 +66,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    let active = true;
+    let cancelled = false;
+    const headers = { Accept: "application/json" };
 
     const fetchTransforms = async () => {
-      const headers = { Accept: "application/json" };
-      const trackedSet = new Set(workflows.map((workflow) => workflow.transformId));
       try {
         const response = await fetch("/es/_transform", { headers });
         if (!response.ok) {
@@ -88,19 +85,16 @@ export default function App() {
             const statsBody = await statsResponse.json();
             const statsEntries = Array.isArray(statsBody.transforms) ? statsBody.transforms : [];
             for (const entry of statsEntries) {
-              const stateObj = entry.state ?? {};
-              const taskState = typeof stateObj.task_state === "string" ? stateObj.task_state : undefined;
-              const indexerState = typeof stateObj.indexer_state === "string" ? stateObj.indexer_state : undefined;
+              const state = entry.state ?? {};
+              const taskState = typeof state.task_state === "string" ? state.task_state : undefined;
+              const indexerState = typeof state.indexer_state === "string" ? state.indexer_state : undefined;
               let checkpoint: number | null = null;
-              if (typeof stateObj.checkpoint === "number") {
-                checkpoint = stateObj.checkpoint;
+              if (typeof state.checkpoint === "number") {
+                checkpoint = state.checkpoint;
               } else if (entry.checkpointing?.last?.checkpoint != null) {
                 checkpoint = entry.checkpointing.last.checkpoint;
               }
-              statsMap.set(entry.id, {
-                state: taskState ?? indexerState,
-                checkpoint,
-              });
+              statsMap.set(entry.id, { state: taskState ?? indexerState, checkpoint });
             }
           } else {
             console.warn(`GET /es/_transform/_stats -> ${statsResponse.status}`);
@@ -109,35 +103,36 @@ export default function App() {
           console.warn("Failed to fetch transform stats", statsError);
         }
 
+        if (cancelled) {
+          return;
+        }
+
+        const trackedIds = new Set(workflows.map((workflow) => workflow.transformId));
         const combined: TransformInfo[] = definitions.map((definition: any) => {
           const stats = statsMap.get(definition.id);
           return {
             id: definition.id,
-            tracked: trackedSet.has(definition.id),
+            tracked: trackedIds.has(definition.id),
             state: stats?.state,
             checkpoint: stats?.checkpoint ?? null,
           };
         });
 
-        if (!active) {
-          return;
-        }
         setEsTransforms(combined);
       } catch (error) {
-        if (!active) {
-          return;
+        if (!cancelled) {
+          setEsTransforms([]);
+          console.warn("GET /es/_transform ->", error);
         }
-        setEsTransforms([]);
-        console.warn("GET /es/_transform ->", error);
       }
     };
 
     fetchTransforms();
-    const intervalId = setInterval(fetchTransforms, POLL_INTERVAL_MS);
+    const interval = setInterval(fetchTransforms, POLL_INTERVAL_MS);
 
     return () => {
-      active = false;
-      clearInterval(intervalId);
+      cancelled = true;
+      clearInterval(interval);
     };
   }, [workflows]);
 
@@ -285,14 +280,10 @@ export default function App() {
             <div className="section">
               {workflows.length === 0 && <div className="muted">No workflows discovered.</div>}
               {workflows.map((workflow) => {
-                const transformStatus = esTransforms.find(
-                  (transform) => transform.id === workflow.transformId
-                );
+                const transformStatus = esTransforms.find((transform) => transform.id === workflow.transformId);
                 const stateMeta = describeTransformState(transformStatus?.state);
                 const checkpointLabel =
-                  typeof transformStatus?.checkpoint === "number"
-                    ? `checkpoint ${transformStatus.checkpoint}`
-                    : null;
+                  typeof transformStatus?.checkpoint === "number" ? `checkpoint ${transformStatus.checkpoint}` : null;
 
                 return (
                   <div key={workflow.id} className="row">
@@ -309,30 +300,56 @@ export default function App() {
                     <div className="btn-row">
                       <span className={`pill ${stateMeta.tone}`}>{stateMeta.label}</span>
                       {checkpointLabel && <span className="pill">{checkpointLabel}</span>}
-                      <button onClick={() => runOp(`/workflows/${workflow.id}/index`, "PUT")}>
+                      <button
+                        title="Create or update the destination index schema from this workflow"
+                        onClick={() => runOp(`/workflows/${workflow.id}/index`, "PUT")}
+                      >
                         Apply Index
                       </button>
-                      <button onClick={() => runOp(`/workflows/${workflow.id}/transform`, "PUT")}>
+                      <button
+                        title="Create or update the transform definition in Elasticsearch"
+                        onClick={() => runOp(`/workflows/${workflow.id}/transform`, "PUT")}
+                      >
                         Put Transform
                       </button>
-                      <button onClick={() => runOp(`/workflows/${workflow.id}/transform/preview`, "POST")}>
+                      <button
+                        title="Preview the transform output without writing data"
+                        onClick={() => runOp(`/workflows/${workflow.id}/transform/preview`, "POST")}
+                      >
                         Preview
                       </button>
-                      <button onClick={() => runOp(`/workflows/${workflow.id}/transform/start`, "POST")}>
+                      <button
+                        title="Start the transform task"
+                        onClick={() => runOp(`/workflows/${workflow.id}/transform/start`, "POST")}
+                      >
                         Start
                       </button>
                       <button
+                        title="Stop the transform after the current checkpoint completes"
                         onClick={() =>
                           runOp(`/workflows/${workflow.id}/transform/stop?waitForCompletion=true`, "POST")
                         }
                       >
                         Stop
                       </button>
-                      <button onClick={() => runOp(`/workflows/${workflow.id}/transform/reset`, "POST")}>
+                      <button
+                        title="Reset transform progress (does not delete the destination index)"
+                        onClick={() => runOp(`/workflows/${workflow.id}/transform/reset`, "POST")}
+                      >
                         Reset
                       </button>
-                      <button onClick={() => viewSchemaForWorkflow(workflow)}>View Schema</button>
-                      <button onClick={() => viewTransformForWorkflow(workflow)}>View Transform</button>
+                      <button
+                        title="View the target index schema (live mapping or workflow definition)"
+                        onClick={() => viewSchemaForWorkflow(workflow)}
+                      >
+                        View Schema
+                      </button>
+                      <button
+                        title="View the transform definition (cluster or workflow version)"
+                        onClick={() => viewTransformForWorkflow(workflow)}
+                      >
+                        View Transform
+                      </button>
                     </div>
                   </div>
                 );
@@ -347,9 +364,7 @@ export default function App() {
               {esTransforms.map((transform) => {
                 const stateMeta = describeTransformState(transform.state);
                 const checkpointLabel =
-                  typeof transform.checkpoint === "number"
-                    ? `checkpoint ${transform.checkpoint}`
-                    : null;
+                  typeof transform.checkpoint === "number" ? `checkpoint ${transform.checkpoint}` : null;
 
                 return (
                   <div key={transform.id} className="row">
@@ -367,7 +382,12 @@ export default function App() {
                         {transform.tracked ? "Tracked" : "Untracked"}
                       </span>
                       {checkpointLabel && <span className="pill">{checkpointLabel}</span>}
-                      <button onClick={() => viewClusterTransform(transform.id)}>View</button>
+                      <button
+                        title="View this transform definition directly from the cluster"
+                        onClick={() => viewClusterTransform(transform.id)}
+                      >
+                        View
+                      </button>
                     </div>
                   </div>
                 );
@@ -404,7 +424,7 @@ export default function App() {
                 </>
               )}
               <div className="btn-row">
-                <button onClick={clearDetails}>Clear</button>
+                <button title="Clear the details panel" onClick={clearDetails}>Clear</button>
               </div>
             </div>
           </div>
