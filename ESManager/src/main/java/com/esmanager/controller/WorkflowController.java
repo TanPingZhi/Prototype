@@ -36,38 +36,38 @@ public class WorkflowController {
 
     @PutMapping("/{workflowId}/index")
     @Operation(summary = "Create or update the destination index for the workflow")
-    public OperationResult applyIndex(@Parameter(description = "Workflow identifier") @PathVariable String workflowId) {
+    public OperationResult applyIndex(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.applyDestinationIndex(workflowId);
     }
 
     @PutMapping("/{workflowId}/transform")
     @Operation(summary = "Create or update the transform definition for the workflow")
-    public OperationResult putTransform(@Parameter(description = "Workflow identifier") @PathVariable String workflowId) {
+    public OperationResult putTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.putTransform(workflowId);
     }
 
     @PostMapping("/{workflowId}/transform/preview")
     @Operation(summary = "Preview the transform output")
-    public OperationResult previewTransform(@Parameter(description = "Workflow identifier") @PathVariable String workflowId) {
+    public OperationResult previewTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.previewTransform(workflowId);
     }
 
     @PostMapping("/{workflowId}/transform/start")
     @Operation(summary = "Start the transform")
-    public OperationResult startTransform(@Parameter(description = "Workflow identifier") @PathVariable String workflowId) {
+    public OperationResult startTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.startTransform(workflowId);
     }
 
     @PostMapping("/{workflowId}/transform/stop")
     @Operation(summary = "Stop the transform")
-    public OperationResult stopTransform(@Parameter(description = "Workflow identifier") @PathVariable String workflowId,
+    public OperationResult stopTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId,
                                          @RequestParam(name = "waitForCompletion", defaultValue = "false") boolean waitForCompletion) {
         return workflowService.stopTransform(workflowId, waitForCompletion);
     }
 
     @PostMapping("/{workflowId}/transform/reset")
     @Operation(summary = "Reset the transform")
-    public OperationResult resetTransform(@Parameter(description = "Workflow identifier") @PathVariable String workflowId) {
+    public OperationResult resetTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.resetTransform(workflowId);
     }
 }
