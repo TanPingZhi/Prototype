@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "time5s": { "type": "date" },
+      "close": { "type": "double" }
+    }
+  }
+}
+

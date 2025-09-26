@@ -1,0 +1,38 @@
+{
+  "description": "Aggregate random walk samples into 10s candles",
+  "source": {
+    "index": [
+      "random-walk"
+    ]
+  },
+  "dest": {
+    "index": "random-walk-transform-target-index"
+  },
+  "frequency": "10s",
+  "sync": {
+    "time": {
+      "field": "timestamp",
+      "delay": "2s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "time5s": {
+        "date_histogram": {
+          "field": "timestamp",
+          "fixed_interval": "10s"
+        }
+      }
+    },
+    "aggregations": {
+      "close": {
+        "scripted_metric": {
+          "init_script": "state.timestamp = 0; state.value = null;",
+          "map_script": "long ts = doc['timestamp'].value.toInstant().toEpochMilli(); double val = doc['value'].value; if (state.value == null || ts >= state.timestamp) { state.timestamp = ts; state.value = val; }",
+          "combine_script": "return state;",
+          "reduce_script": "def latest = null; for (state in states) { if (latest == null || state.timestamp > latest.timestamp) { latest = state; } } return latest != null ? latest.value : null;"
+        }
+      }
+    }
+  }
+}

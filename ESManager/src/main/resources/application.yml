@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: es-manager
+server:
+  port: 8080
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
+  username: admin
+  password: admin123

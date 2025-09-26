@@ -1,0 +1,16 @@
+com\esmanager\config\ElasticsearchConfig.class
+com\esmanager\model\ApiErrorResponse.class
+com\esmanager\workflow\WorkflowRegistry.class
+com\esmanager\workflows\randomwalk\RandomWalkWorkflow.class
+com\esmanager\model\WorkflowApiException.class
+com\esmanager\controller\ApiExceptionHandler.class
+com\esmanager\EsManagerApplication.class
+com\esmanager\controller\WorkflowController.class
+com\esmanager\config\ElasticsearchProperties.class
+com\esmanager\config\SwaggerConfig.class
+com\esmanager\service\ElasticsearchWorkflowService.class
+com\esmanager\workflow\WorkflowNamingValidator.class
+com\esmanager\workflow\TransformWorkflow.class
+com\esmanager\model\WorkflowSummary.class
+com\esmanager\model\OperationResult.class
+com\esmanager\workflow\ResourceBackedWorkflow.class

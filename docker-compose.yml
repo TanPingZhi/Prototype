@@ -1,0 +1,59 @@
+﻿services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
+    container_name: esmanager-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=admin123
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esmanager-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -u elastic:admin123 http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  esmanager:
+    build:
+      context: ./ESManager
+    container_name: esmanager-service
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - ELASTICSEARCH_SCHEME=http
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=admin123
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  random-walk-generator:
+    build:
+      context: ./random-walk-generator
+    container_name: esmanager-random-walk-generator
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ES_HOST=http://elasticsearch:9200
+      - ES_USERNAME=elastic
+      - ES_PASSWORD=admin123
+      - ES_INDEX=random-walk
+      - RW_START_VALUE=100.0
+      - RW_STEP_STDDEV=0.5
+      - RW_INTERVAL_SECONDS=1
+    restart: unless-stopped
+
+volumes:
+  esmanager-data:

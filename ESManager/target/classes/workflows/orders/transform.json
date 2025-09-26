@@ -1,0 +1,45 @@
+{
+  "description": "Aggregate daily order metrics",
+  "source": {
+    "index": [
+      "orders"
+    ]
+  },
+  "dest": {
+    "index": "orders_metrics"
+  },
+  "frequency": "1m",
+  "sync": {
+    "time": {
+      "field": "order_date",
+      "delay": "120s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "order_day": {
+        "date_histogram": {
+          "field": "order_date",
+          "calendar_interval": "1d"
+        }
+      },
+      "order_status": {
+        "terms": {
+          "field": "order_status"
+        }
+      }
+    },
+    "aggregations": {
+      "daily_revenue": {
+        "sum": {
+          "field": "order_total"
+        }
+      },
+      "daily_order_count": {
+        "value_count": {
+          "field": "order_id"
+        }
+      }
+    }
+  }
+}

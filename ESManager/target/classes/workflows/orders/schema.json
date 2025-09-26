@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "order_day": { "type": "date" },
+      "order_status": { "type": "keyword" },
+      "daily_revenue": { "type": "double" },
+      "daily_order_count": { "type": "long" }
+    }
+  }
+}

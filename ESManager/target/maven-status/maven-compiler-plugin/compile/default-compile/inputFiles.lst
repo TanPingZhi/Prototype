@@ -1,0 +1,16 @@
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\config\ElasticsearchConfig.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\config\ElasticsearchProperties.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\config\SwaggerConfig.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\controller\ApiExceptionHandler.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\controller\WorkflowController.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\EsManagerApplication.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\model\ApiErrorResponse.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\model\OperationResult.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\model\WorkflowApiException.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\model\WorkflowSummary.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\service\ElasticsearchWorkflowService.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\workflow\ResourceBackedWorkflow.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\workflow\TransformWorkflow.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\workflow\WorkflowNamingValidator.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\workflow\WorkflowRegistry.java
+C:\Users\josia\Desktop\Prototype\ESManager\src\main\java\com\esmanager\workflows\randomwalk\RandomWalkWorkflow.java
