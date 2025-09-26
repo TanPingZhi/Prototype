@@ -1,10 +1,9 @@
 package com.esmanager.controller;
+
 import com.esmanager.model.OperationResult;
 import com.esmanager.model.WorkflowSummary;
 import com.esmanager.service.ElasticsearchWorkflowService;
 import com.esmanager.workflow.WorkflowRegistry;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,15 +70,5 @@ public class WorkflowController {
     public OperationResult resetTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
         return workflowService.resetTransform(workflowId);
     }
-    @GetMapping("/{workflowId}/schema")
-    @Operation(summary = "Get the destination index schema JSON for the workflow")
-    public JsonNode getSchema(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
-        return workflowRegistry.getRequired(workflowId).schemaJson();
-    }
-
-    @GetMapping("/{workflowId}/transform")
-    @Operation(summary = "Get the transform definition JSON for the workflow")
-    public JsonNode getTransform(@Parameter(description = "Workflow identifier") @PathVariable("workflowId") String workflowId) {
-        return workflowRegistry.getRequired(workflowId).transformJson();
-    }
 }
+

@@ -1,4 +1,4 @@
-﻿services:
+services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
     container_name: esmanager-elasticsearch
@@ -53,6 +53,19 @@
       - RW_START_VALUE=100.0
       - RW_STEP_STDDEV=0.5
       - RW_INTERVAL_SECONDS=1
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./frontend
+    container_name: esmanager-ui
+    depends_on:
+      esmanager:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "3000:80"
     restart: unless-stopped
 
 volumes:
